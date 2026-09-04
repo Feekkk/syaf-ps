@@ -1,39 +1,37 @@
-@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Lato:wght@400;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --font-heading: 'Lato', system-ui, sans-serif;
+    --font-heading: 'Cormorant Garamond', Georgia, serif;
     --font-body: 'Lato', system-ui, sans-serif;
-    --font-heading-weight: 700;
+    --font-heading-weight: 600;
     --font-body-weight: 400;
 
-    /* === Theme-overridable tokens (19 tokens, oklch) === */
-    --color-background: #f4f3ec;
-    --color-foreground: #000000;
-    --color-card: #f6f6f1;
-    --color-card-foreground: #000000;
-    --color-popover: #f6f6f1;
-    --color-popover-foreground: #000000;
-    --color-primary: #000000;
+    --color-background: #FBF6F2;
+    --color-foreground: #4A3535;
+    --color-card: #FFFCFA;
+    --color-card-foreground: #4A3535;
+    --color-popover: #FFFCFA;
+    --color-popover-foreground: #4A3535;
+    --color-primary: #C27575;
     --color-primary-foreground: #ffffff;
-    --color-secondary: #e0e0d9;
-    --color-secondary-foreground: #000000;
-    --color-muted: #e0e0d9;
-    --color-muted-foreground: #626260;
-    --color-accent: #f6f6f1;
-    --color-accent-foreground: #313130;
+    --color-secondary: #F3E6E0;
+    --color-secondary-foreground: #4A3535;
+    --color-muted: #F0E4DC;
+    --color-muted-foreground: #8A6E6E;
+    --color-accent: #F7ECE6;
+    --color-accent-foreground: #5C4040;
     --color-destructive: oklch(62.8% 0.208 22.7);
     --color-destructive-foreground: oklch(100% 0 0);
-    --color-border: #c5c5c1;
-    --color-input: #c5c5c1;
-    --color-ring: #000000;
+    --color-border: #E8D5CC;
+    --color-input: #E8D5CC;
+    --color-ring: #C27575;
 
-    /* Template-specific tokens (not overridden by theme) */
-    --brand-primary: 219 100% 57%;
-    --action-blue: 219 100% 57%;
+    --brand-primary: 0 38% 61%;
+    --action-blue: 0 38% 61%;
 
     --radius: 0.5rem;
 
@@ -49,28 +47,28 @@
   }
 
   .dark {
-    --color-background: #f4f3ec;
-    --color-foreground: #000000;
-    --color-card: #f6f6f1;
-    --color-card-foreground: #000000;
-    --color-popover: #f6f6f1;
-    --color-popover-foreground: #000000;
-    --color-primary: #000000;
+    --color-background: #FBF6F2;
+    --color-foreground: #4A3535;
+    --color-card: #FFFCFA;
+    --color-card-foreground: #4A3535;
+    --color-popover: #FFFCFA;
+    --color-popover-foreground: #4A3535;
+    --color-primary: #C27575;
     --color-primary-foreground: #ffffff;
-    --color-secondary: #e0e0d9;
-    --color-secondary-foreground: #000000;
-    --color-muted: #e0e0d9;
-    --color-muted-foreground: #626260;
-    --color-accent: #f6f6f1;
-    --color-accent-foreground: #313130;
+    --color-secondary: #F3E6E0;
+    --color-secondary-foreground: #4A3535;
+    --color-muted: #F0E4DC;
+    --color-muted-foreground: #8A6E6E;
+    --color-accent: #F7ECE6;
+    --color-accent-foreground: #5C4040;
     --color-destructive: oklch(62.8% 0.208 22.7);
     --color-destructive-foreground: oklch(100% 0 0);
-    --color-border: #c5c5c1;
-    --color-input: #c5c5c1;
-    --color-ring: #000000;
+    --color-border: #E8D5CC;
+    --color-input: #E8D5CC;
+    --color-ring: #C27575;
 
-    --brand-primary: 219 100% 57%;
-    --action-blue: 219 100% 57%;
+    --brand-primary: 0 38% 61%;
+    --action-blue: 0 38% 61%;
 
     --sidebar-background: var(--color-card);
     --sidebar-foreground: var(--color-foreground);
@@ -95,11 +93,11 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading, 'Lato'), system-ui, sans-serif;
+    font-family: var(--font-heading, 'Cormorant Garamond'), Georgia, serif;
     font-weight: var(--font-heading-weight);
   }
 
   a, button, input, label {
-    font-family: var(--font-heading, 'Lato'), system-ui, sans-serif;
+    font-family: var(--font-body, 'Lato'), system-ui, sans-serif;
   }
 }
