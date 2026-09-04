@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatMoney, mockOrders, mockStockLeft, type OrderStatus } from '@/data/mockOrders';
+import { formatMoney, mockOrders, type OrderStatus } from '@/data/mockOrders';
+import { getTotalStockLeft, mockBroadcasts } from '@/data/mockBroadcasts';
 import OrderStatusBadge from '@/components/orders/OrderStatusBadge';
 import { formatDistanceToNow } from 'date-fns';
 import { Boxes, Clock3, Package, Truck } from 'lucide-react';
@@ -20,7 +21,7 @@ const metrics = [
   },
   {
     label: 'Stock Left',
-    value: mockStockLeft,
+    value: getTotalStockLeft(mockBroadcasts),
     hint: 'Units on hand',
     icon: Boxes,
   },

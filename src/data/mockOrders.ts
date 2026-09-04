@@ -29,8 +29,6 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   cancelled: 'Cancelled',
 };
 
-export const mockStockLeft = 18;
-
 export const mockOrders: ShopperOrder[] = [
   {
     id: 'SS-1042',
@@ -140,22 +138,3 @@ export const formatMoney = (amount: number, currency = 'MYR') =>
   new Intl.NumberFormat('en-MY', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
 
 export const getOrderById = (id: string) => mockOrders.find((order) => order.id === id);
-
-export const getClients = () => {
-  const map = new Map<string, { name: string; handle: string; orders: number; spent: number }>();
-  mockOrders.forEach((order) => {
-    const current = map.get(order.telegramHandle);
-    if (current) {
-      current.orders += 1;
-      if (order.status !== 'cancelled') current.spent += order.total;
-    } else {
-      map.set(order.telegramHandle, {
-        name: order.clientName,
-        handle: order.telegramHandle,
-        orders: 1,
-        spent: order.status === 'cancelled' ? 0 : order.total,
-      });
-    }
-  });
-  return Array.from(map.values()).sort((a, b) => b.orders - a.orders);
-};

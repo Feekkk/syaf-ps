@@ -9,7 +9,7 @@ import AppLayout from "./components/layouts/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import OrdersList from "./pages/orders/OrdersList";
 import OrderDetail from "./pages/orders/OrderDetail";
-import ClientsList from "./pages/clients/ClientsList";
+import ChannelPage from "./pages/channel/ChannelPage";
 import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
@@ -27,7 +27,8 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/orders" element={<OrdersList />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
-            <Route path="/clients" element={<ClientsList />} />
+            <Route path="/channel" element={<ChannelPage />} />
+            <Route path="/clients" element={<Navigate to="/channel" replace />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />

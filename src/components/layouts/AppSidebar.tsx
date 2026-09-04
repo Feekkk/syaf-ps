@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, Users, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, Megaphone, Settings, LogOut } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -26,7 +26,7 @@ import BrandLogo from '@/components/BrandLogo';
 const menuItems = [
   { title: 'Overview', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Orders', url: '/orders', icon: Package },
-  { title: 'Clients', url: '/clients', icon: Users },
+  { title: 'Channel', url: '/channel', icon: Megaphone },
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
 
