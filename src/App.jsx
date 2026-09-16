@@ -77,6 +77,7 @@ function PieceCard({
       className={names.join(' ')}
       data-depth={leaving || maximized ? undefined : depth}
       ref={cardRef}
+      tabIndex={maximized ? 0 : undefined}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -136,6 +137,7 @@ function Deck({ pieces }) {
   const frontRef = useRef(null)
   const leaveRef = useRef(null)
   const maxRef = useRef(null)
+  const lightboxRef = useRef(null)
   const originRect = useRef(null)
   const closingRef = useRef(false)
   const dragRef = useRef(null)
@@ -201,6 +203,69 @@ function Deck({ pieces }) {
       return
     }
     flipTo(el, first, el.getBoundingClientRect(), false)
+  }, [maxed])
+
+  useEffect(() => {
+    if (!maxed) return
+    const box = lightboxRef.current
+    if (!box) return
+
+    const previous = document.activeElement
+    const { body, documentElement } = document
+    const gutter = window.innerWidth - documentElement.clientWidth
+    body.style.overflow = 'hidden'
+    if (gutter > 0) body.style.paddingRight = `${gutter}px`
+    documentElement.classList.add('is-lightbox')
+
+    const onTouchMove = (event) => {
+      if (event.target instanceof Node && box.contains(event.target)) return
+      event.preventDefault()
+    }
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+
+    const targets = () =>
+      [...box.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])')].filter(
+        (node) => !node.hasAttribute('disabled'),
+      )
+
+    const closeButton = box.querySelector('.lightbox__scrim')
+    if (closeButton instanceof HTMLElement) {
+      closeButton.focus({ preventScroll: true })
+    } else {
+      box.focus({ preventScroll: true })
+    }
+
+    const onTab = (event) => {
+      if (event.key !== 'Tab') return
+      const nodes = targets()
+      if (nodes.length === 0) {
+        event.preventDefault()
+        box.focus({ preventScroll: true })
+        return
+      }
+      const first = nodes[0]
+      const last = nodes[nodes.length - 1]
+      const active = document.activeElement
+      if (event.shiftKey && (active === first || active === box)) {
+        event.preventDefault()
+        last.focus()
+        return
+      }
+      if (!event.shiftKey && active === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    box.addEventListener('keydown', onTab)
+    return () => {
+      box.removeEventListener('keydown', onTab)
+      document.removeEventListener('touchmove', onTouchMove)
+      documentElement.classList.remove('is-lightbox')
+      body.style.overflow = ''
+      body.style.paddingRight = ''
+      if (previous instanceof HTMLElement) previous.focus({ preventScroll: true })
+    }
   }, [maxed])
 
   useLayoutEffect(() => {
@@ -382,7 +447,14 @@ function Deck({ pieces }) {
       </p>
       <p className="deck__hint">Slide the card.</p>
       {maxed ? (
-        <div className="lightbox" role="dialog" aria-modal="true" aria-label={maxed.title}>
+        <div
+          className="lightbox"
+          ref={lightboxRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={maxed.title}
+          tabIndex={-1}
+        >
           <button
             className="lightbox__scrim"
             type="button"

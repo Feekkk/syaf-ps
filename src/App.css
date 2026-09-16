@@ -392,7 +392,7 @@
 }
 
 .deck--max .card[data-depth='0'] {
-  opacity: 0;
+  visibility: hidden;
 }
 
 .lightbox {
@@ -402,6 +402,10 @@
   display: grid;
   place-items: center;
   padding: var(--space-lg) var(--page-gutter);
+}
+
+.lightbox:focus {
+  outline: none;
 }
 
 .lightbox__scrim {

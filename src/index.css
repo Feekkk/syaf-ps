@@ -16,6 +16,12 @@ html {
   scroll-behavior: smooth;
 }
 
+html.is-lightbox,
+html.is-lightbox body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   background: var(--color-paper);
