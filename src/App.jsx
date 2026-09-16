@@ -1,55 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   brand,
-  buying,
+  faq,
   categories,
-  drop,
   footer,
   items,
-  order,
 } from './content'
 import './App.css'
 
-const NUMBER_WORDS = [
-  'No',
-  'One',
-  'Two',
-  'Three',
-  'Four',
-  'Five',
-  'Six',
-  'Seven',
-  'Eight',
-  'Nine',
-  'Ten',
-  'Eleven',
-  'Twelve',
-]
-
-const spell = (n) => NUMBER_WORDS[n] ?? String(n)
-
-const enquiryLink = (piece) =>
-  `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(
-    `Hello — I would like to ask about the ${piece.item}${
-      piece.house && piece.house !== '—' ? ` by ${piece.house}` : ''
-    }.`,
-  )}`
-
-const orderLink = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(
-  'Hello — I would like you to buy a piece for me.',
-)}`
-
-const composeOrderMessage = ({ piece, size, budget, notes }) => {
-  const lines = [
-    'Hello — please buy this for me.',
-    '',
-    `Piece: ${piece}`,
-    size ? `Size: ${size}` : null,
-    budget ? `Ceiling: ${budget}` : null,
-    notes ? `Notes: ${notes}` : null,
-  ].filter(Boolean)
-  return `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`
-}
+const tiktokLink = `https://www.tiktok.com/@${brand.tiktok}`
 
 function Masthead() {
   return (
@@ -62,17 +21,12 @@ function Masthead() {
         <ul>
           <li>
             <a className="mast__link" href="#drop">
-              The&nbsp;drop
+              Pre-loved
             </a>
           </li>
           <li>
-            <a className="mast__link" href="#order">
-              Order
-            </a>
-          </li>
-          <li>
-            <a className="mast__link" href="#how">
-              How&nbsp;I&nbsp;buy
+            <a className="mast__link" href="#faq">
+              FAQ
             </a>
           </li>
           <li>
@@ -87,66 +41,353 @@ function Masthead() {
   )
 }
 
-function InventoryHeader() {
+const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)'
+const SWIPE_PX = 80
+const SWIPE_VELOCITY = 0.11
+
+function money(value) {
+  return value ?? '—'
+}
+
+function PieceCard({
+  piece,
+  depth,
+  leaving,
+  maximized,
+  cardRef,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onClick,
+}) {
+  const names = ['card']
+  if (leaving) names.push('card--leaving')
+  if (maximized) names.push('card--max')
+
   return (
-    <section className="inventory" aria-labelledby="inventory-title">
-      <div className="inventory__lede">
-        <h1 id="inventory-title" className="inventory__title">
-          {spell(items.length)} {drop.headline}
-        </h1>
-        <p className="inventory__lead">{drop.lead}</p>
-      </div>
-      <dl className="inventory__facts">
-        {drop.facts.map(([term, value]) => (
-          <div className="fact" key={term}>
-            <dt>{term}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
+    <article
+      className={names.join(' ')}
+      data-depth={leaving || maximized ? undefined : depth}
+      ref={cardRef}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      onClick={onClick}
+    >
+      <figure className="card__figure">
+        <img
+          className="card__photo"
+          src={piece.photo ?? '/placeholder-item.svg'}
+          alt={piece.title}
+          width="320"
+          height="400"
+          draggable={false}
+        />
+      </figure>
+      {maximized ? null : (
+        <div className="card__body">
+          <h3 className="card__title">{piece.title}</h3>
+          <dl className="card__facts">
+            <div>
+              <dt>Size</dt>
+              <dd>{piece.size}</dd>
+            </div>
+            <div>
+              <dt>Actual</dt>
+              <dd>{money(piece.actualPrice)}</dd>
+            </div>
+            <div>
+              <dt>Sell</dt>
+              <dd>{money(piece.sellPrice)}</dd>
+            </div>
+          </dl>
+          <a
+            className="link-action"
+            href={tiktokLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Enquire
+          </a>
+        </div>
+      )}
+    </article>
   )
 }
 
-function Piece({ piece }) {
+function Deck({ pieces }) {
+  const [index, setIndex] = useState(0)
+  const [flight, setFlight] = useState(null)
+  const [maxed, setMaxed] = useState(null)
+  const frontRef = useRef(null)
+  const leaveRef = useRef(null)
+  const maxRef = useRef(null)
+  const originRect = useRef(null)
+  const closingRef = useRef(false)
+  const dragRef = useRef(null)
+  const busyRef = useRef(false)
+
+  useEffect(() => {
+    setIndex(0)
+    setFlight(null)
+    setMaxed(null)
+    busyRef.current = false
+  }, [pieces])
+
+  const reduceMotion = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  const step = (dir) => {
+    setIndex((current) => (current + dir + pieces.length) % pieces.length)
+  }
+
+  const flipTo = (el, fromRect, toRect, reverse) => {
+    el.style.transformOrigin = '0 0'
+    const dx = fromRect.left - toRect.left
+    const dy = fromRect.top - toRect.top
+    const sx = fromRect.width / toRect.width
+    const sy = fromRect.height / toRect.height
+    const compact = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`
+    return el.animate(
+      reverse
+        ? [{ transform: 'none' }, { transform: compact }]
+        : [{ transform: compact }, { transform: 'none' }],
+      { duration: 280, easing: EASE_OUT, fill: reverse ? 'forwards' : 'none' },
+    )
+  }
+
+  const openedAt = useRef(0)
+
+  const closeMax = () => {
+    if (Date.now() - openedAt.current < 450) return
+    const el = maxRef.current
+    const dest = frontRef.current?.getBoundingClientRect() ?? originRect.current
+    if (!el || !dest || reduceMotion() || closingRef.current) {
+      setMaxed(null)
+      return
+    }
+    closingRef.current = true
+    const motion = flipTo(el, dest, el.getBoundingClientRect(), true)
+    motion.finished.then(() => {
+      closingRef.current = false
+      setMaxed(null)
+    })
+  }
+
+  useLayoutEffect(() => {
+    if (!maxed || !maxRef.current || closingRef.current) return
+    const el = maxRef.current
+    const first = originRect.current
+    if (!first) return
+    if (reduceMotion()) {
+      el.animate([{ opacity: 0 }, { opacity: 1 }], {
+        duration: 200,
+        easing: EASE_OUT,
+      })
+      return
+    }
+    flipTo(el, first, el.getBoundingClientRect(), false)
+  }, [maxed])
+
+  useLayoutEffect(() => {
+    if (!flight || !leaveRef.current) return
+    const el = leaveRef.current
+    const width = el.getBoundingClientRect().width
+    const from = flight.from || 'none'
+    const to = `translateX(${flight.dir * (width + 96)}px) rotate(${flight.dir * 12}deg)`
+    const motion = el.animate(
+      [
+        { transform: from, opacity: 1 },
+        { transform: to, opacity: 0 },
+      ],
+      { duration: 280, easing: EASE_OUT, fill: 'forwards' },
+    )
+    let alive = true
+    motion.finished.then(() => {
+      if (!alive) return
+      setFlight(null)
+      busyRef.current = false
+    })
+    return () => {
+      alive = false
+      motion.cancel()
+    }
+  }, [flight])
+
+  const snap = (el) => {
+    el.style.transition = `transform 220ms ${EASE_OUT}`
+    el.style.transform = ''
+    const done = () => {
+      el.style.transition = ''
+      el.classList.remove('card--live')
+      el.removeEventListener('transitionend', done)
+    }
+    el.addEventListener('transitionend', done)
+  }
+
+  const onPointerDown = (event) => {
+    if (event.button !== 0) return
+    if (event.target.closest('a')) return
+    if (dragRef.current || busyRef.current || maxed) return
+    const el = frontRef.current
+    if (!el) return
+    el.getAnimations().forEach((animation) => animation.cancel())
+    el.style.transition = ''
+    el.classList.add('card--live')
+    el.setPointerCapture(event.pointerId)
+    dragRef.current = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      lastX: event.clientX,
+      lastT: Date.now(),
+      dx: 0,
+      dy: 0,
+      locked: false,
+    }
+  }
+
+  const onPointerMove = (event) => {
+    const drag = dragRef.current
+    if (!drag || drag.id !== event.pointerId) return
+    const el = frontRef.current
+    if (!el) return
+    const dx = event.clientX - drag.x
+    const dy = event.clientY - drag.y
+    if (pieces.length < 2) return
+    if (!drag.locked) {
+      if (Math.hypot(dx, dy) < 28) return
+      if (Math.abs(dx) <= Math.abs(dy)) return
+      drag.locked = true
+    }
+    drag.dx = dx
+    drag.dy = dy
+    drag.lastX = event.clientX
+    drag.lastT = Date.now()
+    event.preventDefault()
+    el.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`
+  }
+
+  const onPointerUp = (event) => {
+    const drag = dragRef.current
+    if (!drag || drag.id !== event.pointerId) return
+    const el = frontRef.current
+    dragRef.current = null
+    if (!el) return
+    if (!drag.locked) {
+      event.preventDefault()
+      el.classList.remove('card--live')
+      originRect.current = el.getBoundingClientRect()
+      openedAt.current = Date.now()
+      setMaxed(pieces[index])
+      return
+    }
+    const elapsed = Math.max(Date.now() - drag.lastT, 1)
+    const velocity = Math.abs(event.clientX - drag.lastX) / elapsed
+    const dir = drag.dx === 0 ? 1 : Math.sign(drag.dx)
+    const shouldLeave =
+      Math.abs(drag.dx) >= SWIPE_PX || velocity > SWIPE_VELOCITY
+    if (reduceMotion() || !shouldLeave) {
+      if (reduceMotion() && shouldLeave) {
+        el.style.transform = ''
+        el.classList.remove('card--live')
+        step(dir)
+        return
+      }
+      snap(el)
+      return
+    }
+    busyRef.current = true
+    const from = el.style.transform
+    setFlight({ piece: pieces[index], dir, from })
+    step(dir)
+  }
+
+  useEffect(() => {
+    const onKey = (event) => {
+      if (maxed) {
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          closeMax()
+        }
+        return
+      }
+      if (pieces.length < 2 || busyRef.current) return
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        step(1)
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        step(-1)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [pieces.length, maxed])
+
+  if (pieces.length === 0) return null
+
+  const outgoingId = flight?.piece.id
+  const stack = []
+  for (let offset = 0; stack.length < Math.min(3, pieces.length); offset += 1) {
+    if (offset >= pieces.length) break
+    const piece = pieces[(index + offset) % pieces.length]
+    if (piece.id === outgoingId) continue
+    stack.push({ piece, depth: stack.length })
+  }
+
   return (
-    <li className="piece">
-      <figure className="piece__figure">
-        {/* TODO: Replace with real photography, target size 320×400 or larger. */}
-        <img
-          className="piece__photo"
-          src={piece.photo ?? '/placeholder-item.svg'}
-          alt={`${piece.item}${piece.house !== '—' ? ` by ${piece.house}` : ''}`}
-          width="320"
-          height="400"
-          loading="lazy"
-        />
-      </figure>
-      <p className="piece__house">{piece.house}</p>
-      <h3 className="piece__item">{piece.item}</h3>
-      <dl className="piece__spec">
-        <div>
-          <dt>Size</dt>
-          <dd>{piece.size}</dd>
-        </div>
-        <div>
-          <dt>Condition</dt>
-          <dd>{piece.condition}</dd>
-        </div>
-      </dl>
-      <p className="piece__note">{piece.note}</p>
-      <div className="piece__foot">
-        <span className="piece__price">{piece.price ?? 'Ask'}</span>
-        <a
-          className="link-action"
-          href={enquiryLink(piece)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Enquire
-        </a>
+    <div className={maxed ? 'deck deck--max' : 'deck'}>
+      <div className="deck__stage">
+        {stack
+          .slice()
+          .reverse()
+          .map(({ piece, depth }) => (
+            <PieceCard
+              key={piece.id}
+              piece={piece}
+              depth={depth}
+              cardRef={depth === 0 ? frontRef : undefined}
+              onPointerDown={depth === 0 ? onPointerDown : undefined}
+              onPointerMove={depth === 0 ? onPointerMove : undefined}
+              onPointerUp={depth === 0 ? onPointerUp : undefined}
+            />
+          ))}
+        {flight ? (
+          <PieceCard
+            key={`${flight.piece.id}-leave`}
+            piece={flight.piece}
+            leaving
+            cardRef={leaveRef}
+          />
+        ) : null}
       </div>
-    </li>
+      <p className="deck__count" aria-live="polite">
+        {index + 1} of {pieces.length}
+      </p>
+      <p className="deck__hint">Slide the card.</p>
+      {maxed ? (
+        <div className="lightbox" role="dialog" aria-modal="true" aria-label={maxed.title}>
+          <button
+            className="lightbox__scrim"
+            type="button"
+            aria-label="Close"
+            onClick={closeMax}
+          />
+          <PieceCard
+            piece={maxed}
+            maximized
+            cardRef={maxRef}
+            onClick={(event) => {
+              if (event.target.closest('a')) return
+              closeMax()
+            }}
+          />
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -160,7 +401,7 @@ function Drop() {
   return (
     <section className="drop" id="drop" aria-labelledby="drop-title">
       <div className="section-head">
-        <h2 id="drop-title">In stock now</h2>
+        <h1 id="drop-title">In stock now</h1>
         <p className="section-head__sub">
           Every piece is one of one. When it is gone, it is gone.
         </p>
@@ -181,19 +422,20 @@ function Drop() {
       </div>
 
       {shown.length > 0 ? (
-        <ul className="grid" key={active}>
-          {shown.map((piece) => (
-            <Piece piece={piece} key={piece.id} />
-          ))}
-        </ul>
+        <Deck pieces={shown} key={active} />
       ) : (
         <div className="empty">
           <p className="empty__title">Nothing in {active.toLowerCase()} this drop.</p>
           <p className="empty__body">
-            Pieces move between drops. Tell me what you are after and I will buy it for you.
+            Pieces move between drops. Ask on TikTok if you are after something that is not here.
           </p>
-          <a className="button" href="#order">
-            Place an order
+          <a
+            className="button"
+            href={tiktokLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            TikTok
           </a>
         </div>
       )}
@@ -201,193 +443,21 @@ function Drop() {
   )
 }
 
-function Field({ id, label, helper, error, children, invalid }) {
-  const hintId = `${id}-hint`
+function Faq() {
   return (
-    <div className="field">
-      <label className="field__label" htmlFor={id}>
-        {label}
-      </label>
-      {children}
-      <p
-        className={invalid ? 'field__hint field__hint--error' : 'field__hint'}
-        id={hintId}
-      >
-        {invalid ? error : helper}
-      </p>
-    </div>
-  )
-}
-
-function OrderForm() {
-  const [values, setValues] = useState({
-    piece: '',
-    size: '',
-    budget: '',
-    notes: '',
-  })
-  const [touched, setTouched] = useState({})
-  const [status, setStatus] = useState('idle')
-
-  const pieceInvalid = touched.piece && !values.piece.trim()
-  const { piece: pieceField, size, budget, notes } = order.fields
-
-  const set = (key) => (event) => {
-    setValues((current) => ({ ...current, [key]: event.target.value }))
-    if (status === 'success' || status === 'error') setStatus('idle')
-  }
-
-  const blur = (key) => () => {
-    setTouched((current) => ({ ...current, [key]: true }))
-  }
-
-  const onSubmit = (event) => {
-    event.preventDefault()
-    setTouched({ piece: true, size: true, budget: true, notes: true })
-    if (!values.piece.trim()) {
-      setStatus('error')
-      return
-    }
-    setStatus('loading')
-    window.setTimeout(() => {
-      window.open(composeOrderMessage(values), '_blank', 'noopener,noreferrer')
-      setStatus('success')
-    }, 220)
-  }
-
-  const submitLabel =
-    status === 'loading'
-      ? order.ctaLoading
-      : status === 'success'
-        ? order.ctaSuccess
-        : order.cta
-
-  return (
-    <form className="order-form" onSubmit={onSubmit} noValidate>
-      <Field
-        id="order-piece"
-        label={pieceField.label}
-        helper={pieceField.helper}
-        error={pieceField.error}
-        invalid={pieceInvalid}
-      >
-        <input
-          className="input"
-          id="order-piece"
-          name="piece"
-          type="text"
-          value={values.piece}
-          onChange={set('piece')}
-          onBlur={blur('piece')}
-          placeholder={pieceField.placeholder}
-          aria-required="true"
-          aria-invalid={pieceInvalid}
-          aria-describedby="order-piece-hint"
-          autoComplete="off"
-        />
-      </Field>
-      <div className="order-form__pair">
-        <Field id="order-size" label={size.label} helper={size.helper}>
-          <input
-            className="input"
-            id="order-size"
-            name="size"
-            type="text"
-            value={values.size}
-            onChange={set('size')}
-            onBlur={blur('size')}
-            placeholder={size.placeholder}
-            aria-describedby="order-size-hint"
-            autoComplete="off"
-          />
-        </Field>
-        <Field id="order-budget" label={budget.label} helper={budget.helper}>
-          <input
-            className="input"
-            id="order-budget"
-            name="budget"
-            type="text"
-            value={values.budget}
-            onChange={set('budget')}
-            onBlur={blur('budget')}
-            placeholder={budget.placeholder}
-            aria-describedby="order-budget-hint"
-            autoComplete="off"
-          />
-        </Field>
-      </div>
-      <Field id="order-notes" label={notes.label} helper={notes.helper}>
-        <textarea
-          className="input input--area"
-          id="order-notes"
-          name="notes"
-          rows={3}
-          value={values.notes}
-          onChange={set('notes')}
-          onBlur={blur('notes')}
-          placeholder={notes.placeholder}
-          aria-describedby="order-notes-hint"
-        />
-      </Field>
-      <div className="order-form__actions">
-        <button
-          className="button"
-          type="submit"
-          data-state={status}
-          aria-disabled={status === 'loading'}
-          disabled={status === 'loading'}
-        >
-          {submitLabel}
-        </button>
-        <p
-          className={
-            status === 'error'
-              ? 'order-form__status order-form__status--error'
-              : 'order-form__status'
-          }
-          role="status"
-        >
-          {status === 'error'
-            ? pieceField.error
-            : status === 'success'
-              ? 'WhatsApp should open with this order. I will not buy until you confirm the photographs.'
-              : 'Opens WhatsApp with this request. I buy only after you approve.'}
-        </p>
-      </div>
-    </form>
-  )
-}
-
-function Order() {
-  return (
-    <section className="order" id="order" aria-labelledby="order-title">
-      <div className="order__copy">
-        <div className="section-head">
-          <h2 id="order-title">{order.title}</h2>
-          <p className="section-head__sub">{order.lead}</p>
-        </div>
-      </div>
-      <OrderForm />
-    </section>
-  )
-}
-
-function HowIBuy() {
-  return (
-    <section className="buying" id="how" aria-labelledby="buying-title">
+    <section className="faq" id="faq" aria-labelledby="faq-title">
       <div className="section-head">
-        <h2 id="buying-title">{buying.title}</h2>
-        <p className="section-head__sub">{buying.lead}</p>
+        <h2 id="faq-title">{faq.title}</h2>
+        <p className="section-head__sub">{faq.lead}</p>
       </div>
-      <dl className="terms">
-        {buying.terms.map(([term, meaning]) => (
-          <div className="term" key={term}>
-            <dt>{term}</dt>
-            <dd>{meaning}</dd>
+      <dl className="faq-list">
+        {faq.items.map(([question, answer]) => (
+          <div className="faq-item" key={question}>
+            <dt>{question}</dt>
+            <dd>{answer}</dd>
           </div>
         ))}
       </dl>
-      <p className="buying__close">{buying.closing}</p>
     </section>
   )
 }
@@ -405,26 +475,11 @@ function Footer() {
         <li>
           <a
             className="link-action"
-            href={orderLink}
+            href={tiktokLink}
             target="_blank"
             rel="noopener noreferrer"
           >
-            WhatsApp
-          </a>
-        </li>
-        <li>
-          <a
-            className="link-action"
-            href={`https://instagram.com/${brand.instagram}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Instagram
-          </a>
-        </li>
-        <li>
-          <a className="link-action" href={`mailto:${brand.email}`}>
-            Email
+            TikTok
           </a>
         </li>
       </ul>
@@ -437,10 +492,8 @@ export default function App() {
     <div className="page" id="top">
       <Masthead />
       <main>
-        <InventoryHeader />
         <Drop />
-        <Order />
-        <HowIBuy />
+        <Faq />
       </main>
       <Footer />
     </div>
