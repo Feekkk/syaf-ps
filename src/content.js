@@ -8,6 +8,8 @@ export const brand = {
   wordmark: 'syafwaldorf',
   mastLine: 'Welcome to my shop',
   tiktok: 'syafwaldorf',
+  maker: 'Feekk',
+  github: 'https://github.com/Feekkk',
 }
 
 export const categories = ['All', 'Cardigan', 'Blouse', 'Sweater', 'Shirt', 'Kebaya','Others']

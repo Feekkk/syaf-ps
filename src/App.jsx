@@ -129,8 +129,7 @@ function Masthead() {
       <a className="mast__name" href="/" onClick={(event) => go(event, '/')}>
         {brand.wordmark}
       </a>
-      <blockquote className="mast__quote">{brand.mastLine}</blockquote>
-      <hr className="mast__rule" aria-hidden="true" />
+      <p className="mast__kicker">{brand.mastLine}</p>
     </header>
   )
 }
@@ -564,7 +563,7 @@ function Deck({ pieces }) {
       <p className="deck__count" aria-live="polite">
         {index + 1} of {pieces.length}
       </p>
-      <p className="deck__hint">Slide the card.</p>
+      <p className="deck__hint">Slide the card. Click the card to view more details.</p>
       {maxed ? (
         <div
           className="lightbox"
@@ -710,6 +709,23 @@ function Contact() {
   )
 }
 
+function Credit() {
+  return (
+    <footer className="colophon">
+      <p>
+        Created with love by{' '}
+        <a
+          href={brand.github}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {brand.maker}
+        </a>
+      </p>
+    </footer>
+  )
+}
+
 export default function App() {
   const path = useRoute()
 
@@ -721,6 +737,7 @@ export default function App() {
         {path === '/contact' ? <Contact /> : null}
         {path === '/' ? <Drop /> : null}
       </main>
+      <Credit />
       <Dock path={path} />
     </div>
   )

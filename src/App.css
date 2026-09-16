@@ -20,20 +20,21 @@
 .mast {
   display: grid;
   justify-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-lg) var(--page-gutter) 0;
+  gap: var(--space-2xs);
+  padding: var(--space-lg) var(--page-gutter) var(--space-md);
   text-align: center;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
 }
 
 .mast__name {
+  min-width: 0;
   font-family: var(--font-wordmark);
   font-weight: 700;
-  font-size: clamp(2.5rem, 7vw, 4.25rem);
-  line-height: 1.02;
+  font-size: clamp(2.15rem, 6vw, 3.35rem);
+  line-height: 1.05;
   letter-spacing: -0.02em;
   text-decoration: none;
   overflow-wrap: anywhere;
-  min-width: 0;
   transition: color var(--dur-micro) var(--ease-out);
 }
 
@@ -42,9 +43,8 @@
   color: var(--color-accent-deep);
 }
 
-.mast__quote {
+.mast__kicker {
   margin: 0;
-  max-width: 28ch;
   font-family: var(--font-body);
   font-style: italic;
   font-size: var(--text-md);
@@ -52,21 +52,15 @@
   color: var(--color-muted);
 }
 
-.mast__quote::before {
-  content: '“';
-}
+@media (max-width: 40rem) {
+  .mast {
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-sm);
+  }
 
-.mast__quote::after {
-  content: '”';
-}
-
-.mast__rule {
-  border: 0;
-  border-top: var(--rule-hair) solid var(--color-rule);
-  border-bottom: var(--rule-hair) solid var(--color-rule);
-  height: 4px;
-  width: 100%;
-  margin: var(--space-lg) 0 0;
+  .mast__name {
+    font-size: clamp(1.85rem, 9vw, 2.4rem);
+  }
 }
 
 /* ── Section heads — stacked single column, never tag-left ───────────────── */
@@ -632,6 +626,35 @@
   align-items: center;
   gap: var(--space-md) var(--space-lg);
   margin-top: var(--space-lg);
+}
+
+.colophon {
+  text-align: center;
+  padding: var(--space-lg) var(--page-gutter) 0;
+}
+
+.colophon p {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.colophon a {
+  color: var(--color-accent);
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-rule-strong);
+  white-space: nowrap;
+  transition:
+    color var(--dur-micro) var(--ease-out),
+    text-decoration-color var(--dur-micro) var(--ease-out);
+}
+
+.colophon a:hover {
+  color: var(--color-accent-deep);
+  text-decoration-color: var(--color-accent);
+}
+
+.colophon a:active {
+  color: var(--color-ink);
 }
 
 /* ── N5 · Floating glass dock ────────────────────────────────────────────── */
