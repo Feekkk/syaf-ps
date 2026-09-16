@@ -46,7 +46,14 @@ const SWIPE_PX = 80
 const SWIPE_VELOCITY = 0.11
 
 function money(value) {
-  return value ?? '—'
+  return value == null ? 'RM —' : `RM ${value}`
+}
+
+function offPercent(actual, current) {
+  if (actual == null || current == null || actual <= 0 || current >= actual) {
+    return null
+  }
+  return Math.round((1 - current / actual) * 100)
 }
 
 function PieceCard({
@@ -63,6 +70,7 @@ function PieceCard({
   const names = ['card']
   if (leaving) names.push('card--leaving')
   if (maximized) names.push('card--max')
+  const off = offPercent(piece.actualPrice, piece.sellPrice)
 
   return (
     <article
@@ -94,12 +102,17 @@ function PieceCard({
               <dd>{piece.size}</dd>
             </div>
             <div>
-              <dt>Actual</dt>
-              <dd>{money(piece.actualPrice)}</dd>
+              <dt>Actual price</dt>
+              <dd className="card__deal">
+                <s className="card__was">{money(piece.actualPrice)}</s>
+                {off != null ? (
+                  <span className="card__off">−{off}%</span>
+                ) : null}
+              </dd>
             </div>
             <div>
-              <dt>Sell</dt>
-              <dd>{money(piece.sellPrice)}</dd>
+              <dt>Current price</dt>
+              <dd className="card__now">{money(piece.sellPrice)}</dd>
             </div>
           </dl>
           <a
@@ -292,7 +305,7 @@ function Deck({ pieces }) {
       if (reduceMotion() && shouldLeave) {
         el.style.transform = ''
         el.classList.remove('card--live')
-        step(dir)
+        step(1)
         return
       }
       snap(el)
@@ -301,7 +314,7 @@ function Deck({ pieces }) {
     busyRef.current = true
     const from = el.style.transform
     setFlight({ piece: pieces[index], dir, from })
-    step(dir)
+    step(1)
   }
 
   useEffect(() => {
