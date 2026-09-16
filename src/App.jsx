@@ -4,40 +4,159 @@ import {
   faq,
   categories,
   footer,
+  contact,
   items,
 } from './content'
 import './App.css'
 
 const tiktokLink = `https://www.tiktok.com/@${brand.tiktok}`
 
+const titles = {
+  '/': 'syafwaldorf · pre-loved shop',
+  '/faq': 'FAQ · syafwaldorf',
+  '/contact': 'Contact · syafwaldorf',
+}
+
+function currentPath() {
+  const { pathname, hash } = window.location
+  if (hash === '#faq' || pathname === '/faq') return '/faq'
+  if (hash === '#contact' || pathname === '/contact') return '/contact'
+  return '/'
+}
+
+function go(event, href) {
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+    return
+  }
+  event.preventDefault()
+  if (currentPath() === href) {
+    window.scrollTo(0, 0)
+    return
+  }
+  window.history.pushState({}, '', href)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+}
+
+function useRoute() {
+  const [path, setPath] = useState(currentPath)
+
+  useEffect(() => {
+    const pathNow = currentPath()
+    if (window.location.hash === '#faq' || window.location.hash === '#contact') {
+      window.history.replaceState({}, '', pathNow)
+    }
+    const sync = () => setPath(currentPath())
+    window.addEventListener('popstate', sync)
+    return () => window.removeEventListener('popstate', sync)
+  }, [])
+
+  useEffect(() => {
+    document.title = titles[path] ?? titles['/']
+    window.scrollTo(0, 0)
+  }, [path])
+
+  return path
+}
+
+const dockLinks = [
+  {
+    id: 'drop',
+    href: '/',
+    label: 'Pre-loved',
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M12 5.5a1.6 1.6 0 1 1 1.55 2.05L12 9.2 6.8 7.4 5.2 19.5h13.6L17.2 7.4 12 9.2"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 'faq',
+    href: '/faq',
+    label: 'FAQ',
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8.25" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <path
+          d="M9.6 9.4a2.5 2.5 0 0 1 4.7.9c0 1.5-1.5 2-2.3 2.6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <circle cx="12" cy="16.4" r="0.9" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    id: 'contact',
+    href: '/contact',
+    label: 'Contact',
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect
+          x="4"
+          y="6.5"
+          width="16"
+          height="11"
+          rx="1.6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+        />
+        <path
+          d="m5 8 7 5.2L19 8"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
+]
+
 function Masthead() {
   return (
     <header className="mast">
-      <p className="mast__line">{brand.mastLine}</p>
-      <a className="mast__name" href="#top">
+      <a className="mast__name" href="/" onClick={(event) => go(event, '/')}>
         {brand.wordmark}
       </a>
-      <nav className="mast__nav" aria-label="Primary">
-        <ul>
-          <li>
-            <a className="mast__link" href="#drop">
-              Pre-loved
-            </a>
-          </li>
-          <li>
-            <a className="mast__link" href="#faq">
-              FAQ
-            </a>
-          </li>
-          <li>
-            <a className="mast__link" href="#contact">
-              Contact
-            </a>
-          </li>
-        </ul>
-      </nav>
+      <blockquote className="mast__quote">{brand.mastLine}</blockquote>
       <hr className="mast__rule" aria-hidden="true" />
     </header>
+  )
+}
+
+function Dock({ path }) {
+  return (
+    <nav className="dock" aria-label="Primary">
+      <ul className="dock__list">
+        {dockLinks.map((link) => {
+          const current = path === link.href
+          return (
+            <li key={link.id}>
+              <a
+                className={current ? 'dock__item is-active' : 'dock__item'}
+                href={link.href}
+                aria-current={current ? 'page' : undefined}
+                onClick={(event) => go(event, link.href)}
+              >
+                <span className="dock__icon">{link.icon}</span>
+                <span className="dock__label">{link.label}</span>
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
   )
 }
 
@@ -485,10 +604,10 @@ function Drop() {
 
   return (
     <section className="drop" id="drop" aria-labelledby="drop-title">
-      <div className="section-head">
-        <h1 id="drop-title">In stock now</h1>
+      <div className="section-head drop__head">
+        <h1 id="drop-title">In stock now !</h1>
         <p className="section-head__sub">
-          Every piece is one of one. When it is gone, it is gone.
+          Grab it before it's gone
         </p>
       </div>
 
@@ -532,14 +651,20 @@ function Faq() {
   return (
     <section className="faq" id="faq" aria-labelledby="faq-title">
       <div className="section-head">
-        <h2 id="faq-title">{faq.title}</h2>
+        <h1 id="faq-title">{faq.title}</h1>
         <p className="section-head__sub">{faq.lead}</p>
       </div>
-      <dl className="faq-list">
+      <dl className="faq-notes">
         {faq.items.map(([question, answer]) => (
-          <div className="faq-item" key={question}>
-            <dt>{question}</dt>
-            <dd>{answer}</dd>
+          <div className="faq-note" key={question}>
+            <dt>
+              <span className="faq-note__who">You</span>
+              {question}
+            </dt>
+            <dd>
+              <span className="faq-note__who">Syaf</span>
+              {answer}
+            </dd>
           </div>
         ))}
       </dl>
@@ -547,40 +672,56 @@ function Faq() {
   )
 }
 
-function Footer() {
+function Contact() {
   return (
-    <footer className="close" id="contact">
-      <p className="close__sign">
-        {footer.close}
-        <br />
-        <span className="close__name">— {brand.wordmark}</span>
-      </p>
-      <p className="close__ps">{footer.ps}</p>
-      <ul className="close__links">
-        <li>
-          <a
-            className="link-action"
-            href={tiktokLink}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            TikTok
-          </a>
-        </li>
-      </ul>
-    </footer>
+    <section className="contact" id="contact" aria-labelledby="contact-title">
+      <div className="section-head">
+        <h1 id="contact-title">Contact</h1>
+        <p className="section-head__sub">{footer.ps}</p>
+      </div>
+      <div className="contact__letter">
+        <dl className="contact__facts">
+          {contact.facts.map(([label, detail]) => (
+            <div className="contact__fact" key={label}>
+              <dt>{label}</dt>
+              <dd>{detail}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="close__sign">
+          {footer.close}
+          <br />
+          <span className="close__name">— {brand.wordmark}</span>
+        </p>
+        <ul className="close__links">
+          <li>
+            <a
+              className="link-action"
+              href={tiktokLink}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              TikTok
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
   )
 }
 
 export default function App() {
+  const path = useRoute()
+
   return (
     <div className="page" id="top">
       <Masthead />
       <main>
-        <Drop />
-        <Faq />
+        {path === '/faq' ? <Faq /> : null}
+        {path === '/contact' ? <Contact /> : null}
+        {path === '/' ? <Drop /> : null}
       </main>
-      <Footer />
+      <Dock path={path} />
     </div>
   )
 }

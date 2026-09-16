@@ -17,10 +17,15 @@
   --color-error: oklch(48% 0.16 28);
   --color-success: oklch(42% 0.08 145);
   --color-shadow: oklch(21% 0.014 60 / 0.08);
+  --color-glass: oklch(100% 0.008 78 / 0.48);
+  --color-glass-fill: oklch(100% 0 0 / 0.78);
+  --color-glass-edge: oklch(100% 0 0 / 0.55);
+  --color-glass-shine: oklch(100% 0 0 / 0.7);
+  --blur-glass: blur(40px) saturate(190%);
 
   --font-display: 'Bodoni Moda', ui-serif, Georgia, serif;
   --font-body: 'EB Garamond', ui-serif, Georgia, serif;
-  --font-wordmark: 'Hagrid', 'Hagrid Regular', var(--font-display);
+  --font-wordmark: 'Playfair Display', var(--font-display);
 
   --text-xs: 0.8rem;
   --text-sm: 0.9rem;

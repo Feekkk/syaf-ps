@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const brand = {
-  wordmark: 'Syaf',
+  wordmark: 'syafwaldorf',
   mastLine: 'Welcome to my shop',
   tiktok: 'syafwaldorf',
 }
@@ -145,4 +145,21 @@ export const faq = {
 export const footer = {
   close: 'Yours,',
   ps: 'Letters, questions, and photographs of things you are hunting for are all welcome.',
+}
+
+export const contact = {
+  facts: [
+    [
+      'Reach me',
+      'Message @syafwaldorf on TikTok. Name the piece, or send a photograph of what you are looking for.',
+    ],
+    [
+      'Ship',
+      'Peninsula Malaysia only, with J&T. Payment is due before the piece leaves me. I send a photo and a tracking number when it goes.',
+    ],
+    [
+      'Pay',
+      'QR payment, bank transfer, or digital wallet.',
+    ],
+  ],
 }
