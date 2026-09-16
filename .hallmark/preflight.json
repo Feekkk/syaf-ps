@@ -1,0 +1,11 @@
+{
+  "date": "2026-09-08",
+  "design_md": null,
+  "font_stack": "system-ui / Segoe UI / Roboto (Vite scaffold default, src/index.css L13-15)",
+  "palette": "hex custom properties, accent #aa3bff (Vite scaffold default, src/index.css L1-11)",
+  "motion": "none detected (no framer-motion / gsap / motion in package.json)",
+  "spacing": "none defined",
+  "framework": "Vite 8 + React 19, plain CSS, no Tailwind",
+  "assets": "src/assets/hero.png is the Vite scaffold logo; no brand imagery",
+  "verdict": "untouched scaffold - nothing to preserve"
+}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 400" role="presentation">
+  <rect width="320" height="400" fill="oklch(90% 0.018 74)" />
+  <rect x="0.5" y="0.5" width="319" height="399" fill="none" stroke="oklch(80% 0.014 74)" />
+  <path d="M120 180h80v60h-80z" fill="none" stroke="oklch(66% 0.014 70)" />
+  <path d="M120 240l26-30 20 20 14-14 20 24" fill="none" stroke="oklch(66% 0.014 70)" />
+  <circle cx="182" cy="196" r="6" fill="none" stroke="oklch(66% 0.014 70)" />
+</svg>

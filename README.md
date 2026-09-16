@@ -1,17 +1,23 @@
-# React + Vite
+# Syaf - personal shopper web apps
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A one-person shop for bags, shoes, ready-to-wear, and accessories. Pieces are bought in person, checked against the maker’s marks, and photographed as they are, wear included.
 
-Currently, two official plugins are available:
+The site is the shop window. It shows what is in stock this drop and how to ask Syaf to buy something that is not.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## The drop
 
-## React Compiler
+Inventory lives as a list of one-of-one pieces. Each listing names the item, house, size, condition, and a note. Price is shown when it is set; otherwise it reads Ask. Enquire on a piece opens WhatsApp with that item already named.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Pieces are grouped as bags, shoes, ready-to-wear, and accessories. When a category is empty, the page says so and points to an order instead. Once a piece is gone, it is gone.
 
-## Expanding the ESLint configuration
+Hours, shipping, and payment sit above the grid: opens at 10am, ships within Peninsula Malaysia, paid by QR, bank transfer, or digital wallet.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# syaf-ps
+## Orders
+
+If the piece is not in the drop, the order form is the brief. You name what you want, add size and a ceiling if you have them, and send. WhatsApp opens with that request already written.
+
+Syaf finds it, photographs it, and waits for a yes before buying. Payment is due before the piece leaves. If it cannot be found, there is no fee.
+
+## Contact
+
+WhatsApp, Instagram, and email sit at the close of the page. Letters, questions, and photographs of things you are hunting for are welcome.
