@@ -33,7 +33,7 @@
 }
 
 .mast__name {
-  font-family: var(--font-display);
+  font-family: var(--font-wordmark);
   font-weight: 400;
   font-size: clamp(2.5rem, 7vw, 4.25rem);
   line-height: 1.02;

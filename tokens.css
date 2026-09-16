@@ -20,6 +20,7 @@
 
   --font-display: 'Bodoni Moda', ui-serif, Georgia, serif;
   --font-body: 'EB Garamond', ui-serif, Georgia, serif;
+  --font-wordmark: 'Hagrid', 'Hagrid Regular', var(--font-display);
 
   --text-xs: 0.8rem;
   --text-sm: 0.9rem;
