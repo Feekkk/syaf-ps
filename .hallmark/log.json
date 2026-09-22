@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-09-22",
+    "genre": "editorial",
+    "macrostructure": "Photo-led catalogue with optional swipe deck",
+    "theme": "Atelier",
+    "enrichment": "Existing product photography",
+    "brief": "Modern boutique refresh with catalog grid, responsive navigation and subtle motion",
+    "verification": "Build and lint pass; visual browser QA unavailable"
+  },
+  {
     "date": "2026-09-08",
     "genre": "editorial",
     "macrostructure": "Catalogue",

@@ -108,3 +108,6 @@ button {
     transition-duration: 150ms !important;
   }
 }
+
+body { font-variant-numeric: lining-nums; }
+button, a { -webkit-tap-highlight-color: var(--color-clear); }
