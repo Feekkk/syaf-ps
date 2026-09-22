@@ -123,13 +123,16 @@ const dockLinks = [
   },
 ]
 
-function Masthead() {
+function Masthead({ path }) {
   return (
     <header className="mast">
       <a className="mast__name" href="/" onClick={(event) => go(event, '/')}>
         {brand.wordmark}
       </a>
-      <p className="mast__kicker">{brand.mastLine}</p>
+      <nav className="mast__nav" aria-label="Desktop navigation">
+        {dockLinks.map(link => <a key={link.id} href={link.href} aria-current={path === link.href ? 'page' : undefined} onClick={event => go(event, link.href)}>{link.label}</a>)}
+      </nav>
+      <a className="mast__social" href={tiktokLink} target="_blank" rel="noopener noreferrer">Let’s chat <span aria-hidden="true">↗</span></a>
     </header>
   )
 }
@@ -184,6 +187,7 @@ function PieceCard({
   onPointerMove,
   onPointerUp,
   onClick,
+  onPreview,
 }) {
   const names = ['card']
   if (leaving) names.push('card--leaving')
@@ -203,6 +207,7 @@ function PieceCard({
       onClick={onClick}
     >
       <figure className="card__figure">
+        {onPreview ? <button className="card__preview" aria-label={`View ${piece.title}`} onClick={onPreview}><span aria-hidden="true">↗</span></button> : null}
         <img
           className="card__photo"
           src={piece.photo ?? '/placeholder-item.svg'}
@@ -210,10 +215,12 @@ function PieceCard({
           width="320"
           height="400"
           draggable={false}
+          loading={onPreview ? "lazy" : "eager"}
         />
       </figure>
       {maximized ? null : (
         <div className="card__body">
+          <p className="card__category">{piece.category}</p>
           <h3 className="card__title">{piece.title}</h3>
           <dl className="card__facts">
             <div>
@@ -240,7 +247,7 @@ function PieceCard({
             target="_blank"
             rel="noopener noreferrer"
           >
-            Enquire
+            Enquire on TikTok <span aria-hidden="true">↗</span>
           </a>
         </div>
       )}
@@ -248,7 +255,7 @@ function PieceCard({
   )
 }
 
-function Deck({ pieces }) {
+function Deck({ pieces, view }) {
   const [index, setIndex] = useState(0)
   const [flight, setFlight] = useState(null)
   const [maxed, setMaxed] = useState(null)
@@ -260,13 +267,6 @@ function Deck({ pieces }) {
   const closingRef = useRef(false)
   const dragRef = useRef(null)
   const busyRef = useRef(false)
-
-  useEffect(() => {
-    setIndex(0)
-    setFlight(null)
-    setMaxed(null)
-    busyRef.current = false
-  }, [pieces])
 
   const reduceMotion = () =>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -471,6 +471,15 @@ function Deck({ pieces }) {
     const el = frontRef.current
     dragRef.current = null
     if (!el) return
+    if (event.type === 'pointercancel') {
+      el.style.transform = ''
+      el.classList.remove('card--live')
+      return
+    }
+    if (!drag.locked && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 15) {
+      el.classList.remove('card--live')
+      return
+    }
     if (!drag.locked) {
       event.preventDefault()
       el.classList.remove('card--live')
@@ -509,7 +518,7 @@ function Deck({ pieces }) {
         }
         return
       }
-      if (pieces.length < 2 || busyRef.current) return
+      if (view === 'grid' || pieces.length < 2 || busyRef.current || event.target.closest('button, a, input, select, textarea')) return
       if (event.key === 'ArrowRight') {
         event.preventDefault()
         step(1)
@@ -521,7 +530,7 @@ function Deck({ pieces }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [pieces.length, maxed])
+  })
 
   if (pieces.length === 0) return null
 
@@ -535,9 +544,13 @@ function Deck({ pieces }) {
   }
 
   return (
-    <div className={maxed ? 'deck deck--max' : 'deck'}>
+    <div className={`deck ${maxed ? 'deck--max' : ''} ${view === 'grid' ? 'deck--grid' : ''}`}>
       <div className="deck__stage">
-        {stack
+        {view === 'grid' ? pieces.map(piece => <PieceCard key={piece.id} piece={piece} onPreview={(event) => {
+          originRect.current = event.currentTarget.closest('.card').getBoundingClientRect()
+          openedAt.current = Date.now()
+          setMaxed(piece)
+        }} />) : stack
           .slice()
           .reverse()
           .map(({ piece, depth }) => (
@@ -560,10 +573,12 @@ function Deck({ pieces }) {
           />
         ) : null}
       </div>
+      {view !== 'grid' ? <div className="deck__controls"><button type="button" aria-label="Previous piece" onClick={() => step(-1)}>←</button>
       <p className="deck__count" aria-live="polite">
         {index + 1} of {pieces.length}
       </p>
-      <p className="deck__hint">Slide the card. Click the card to view more details.</p>
+      <button type="button" aria-label="Next piece" onClick={() => step(1)}>→</button></div> : null}
+      {view !== 'grid' ? <p className="deck__hint">Swipe to explore. Tap a photo for a closer look.</p> : null}
       {maxed ? (
         <div
           className="lightbox"
@@ -579,6 +594,7 @@ function Deck({ pieces }) {
             aria-label="Close"
             onClick={closeMax}
           />
+          <button className="lightbox__close" type="button" onClick={closeMax} aria-label="Close photo">✕</button>
           <PieceCard
             piece={maxed}
             maximized
@@ -596,6 +612,7 @@ function Deck({ pieces }) {
 
 function Drop() {
   const [active, setActive] = useState('All')
+  const [view, setView] = useState('grid')
   const shown = useMemo(
     () => (active === 'All' ? items : items.filter((p) => p.category === active)),
     [active],
@@ -603,13 +620,25 @@ function Drop() {
 
   return (
     <section className="drop" id="drop" aria-labelledby="drop-title">
-      <div className="section-head drop__head">
-        <h1 id="drop-title">In stock now !</h1>
-        <p className="section-head__sub">
-          Grab it before it's gone
-        </p>
+      <div className="shop-intro">
+        <div className="shop-intro__copy">
+          <p className="eyebrow">A little wardrobe refresh</p>
+          <h1 id="drop-title">Pre-loved.<br />Ready for <span>your story.</span></h1>
+          <p>Welcome to my shop. Discover pieces from my wardrobe, ready to find a place in yours.</p>
+          <a className="button button--primary" href="#collection">Explore the pieces <span aria-hidden="true">↘</span></a>
+          <span className="shop-intro__note">From my wardrobe to yours — syafwaldorf</span>
+        </div>
+        <a className="shop-intro__image" href="#collection" aria-label="Browse the pre-loved collection">
+          <img src="/hero-wardrobe.jpg" alt="Warm fashion still life with an oatmeal cardigan and blush lace blouse draped over a wooden chair" width="1122" height="1402" fetchPriority="high" />
+          <span className="shop-intro__caption">A second chapter, beautifully worn. <span aria-hidden="true">↗</span></span>
+        </a>
       </div>
-
+      <div className="shop-note"><span>Pre-loved, personally listed</span><span>Shipping within Peninsula Malaysia</span><a href="/faq" onClick={event => go(event, '/faq')}>How to shop ↗</a></div>
+      <div className="collection-head" id="collection">
+        <div><p className="eyebrow">The current edit</p><h2>Find your next favourite.</h2></div>
+        <p>{items.length} pieces. A little something for you.</p>
+      </div>
+      <div className="collection-toolbar">
       <div className="filters" role="group" aria-label="Filter by category">
         {categories.map((category) => (
           <button
@@ -624,8 +653,14 @@ function Drop() {
         ))}
       </div>
 
+      <div className="view-switch" role="group" aria-label="Browse layout">
+        <button aria-pressed={view === 'grid'} onClick={() => setView('grid')}>Grid</button>
+        <button aria-pressed={view === 'swipe'} onClick={() => setView('swipe')}>Swipe</button>
+      </div>
+      </div>
+      <p className="results-count" aria-live="polite">{shown.length} {shown.length === 1 ? 'piece' : 'pieces'}{active !== 'All' ? ` · ${active}` : ''}</p>
       {shown.length > 0 ? (
-        <Deck pieces={shown} key={active} />
+        <Deck pieces={shown} view={view} key={`${active}-${view}`} />
       ) : (
         <div className="empty">
           <p className="empty__title">Nothing in {active.toLowerCase()} this drop.</p>
@@ -731,8 +766,9 @@ export default function App() {
 
   return (
     <div className="page" id="top">
-      <Masthead />
-      <main>
+      <a className="skip-link" href="#main">Skip to content</a>
+      <Masthead path={path} />
+      <main id="main">
         {path === '/faq' ? <Faq /> : null}
         {path === '/contact' ? <Contact /> : null}
         {path === '/' ? <Drop /> : null}

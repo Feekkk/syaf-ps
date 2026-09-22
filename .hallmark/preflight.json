@@ -1,11 +1,11 @@
 {
-  "date": "2026-09-08",
+  "date": "2026-09-22",
   "design_md": null,
-  "font_stack": "system-ui / Segoe UI / Roboto (Vite scaffold default, src/index.css L13-15)",
-  "palette": "hex custom properties, accent #aa3bff (Vite scaffold default, src/index.css L1-11)",
-  "motion": "none detected (no framer-motion / gsap / motion in package.json)",
-  "spacing": "none defined",
-  "framework": "Vite 8 + React 19, plain CSS, no Tailwind",
-  "assets": "src/assets/hero.png is the Vite scaffold logo; no brand imagery",
-  "verdict": "untouched scaffold - nothing to preserve"
+  "font_stack": "Bodoni Moda and Playfair Display branding; DM Sans body (tokens.css)",
+  "palette": "Existing warm Atelier palette preserved",
+  "motion": "CSS entrance and interaction transitions; existing WAAPI swipe and lightbox",
+  "spacing": "Existing tokens.css spacing scale",
+  "framework": "Vite 8 + React 19, plain CSS",
+  "assets": "Existing local product photography public/p1.png through public/p11.png",
+  "verification": "Production build and ESLint pass; browser unavailable, viewport QA pending"
 }
