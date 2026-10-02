@@ -14,6 +14,15 @@ export const brand = {
 
 export const categories = ['All', 'Cardigan', 'Blouse', 'Sweater', 'Shirt', 'Kebaya','Others']
 
+const PLACEHOLDER_PHOTO = '/placeholder-item.svg'
+const LOCAL_IMAGE = /^\/(?:[A-Za-z0-9][A-Za-z0-9._-]*\/)*[A-Za-z0-9][A-Za-z0-9._-]*\.(?:avif|gif|jpe?g|png|svg|webp)$/i
+
+export function imageSrc(value) {
+  if (typeof value !== 'string') return PLACEHOLDER_PHOTO
+  const photo = value.trim()
+  return LOCAL_IMAGE.test(photo) ? photo : PLACEHOLDER_PHOTO
+}
+
 export const items = [
   {
     id: 'p1',
