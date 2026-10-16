@@ -5,9 +5,13 @@ import {
   categories,
   footer,
   contact,
+  items as fallbackItems,
   items,
   imageSrc,
+
 } from './content'
+import { api } from './lib/api'
+import Admin from './admin/Admin'
 import './App.css'
 
 const tiktokLink = `https://www.tiktok.com/@${brand.tiktok}`
@@ -16,12 +20,14 @@ const titles = {
   '/': 'syafwaldorf · pre-loved shop',
   '/faq': 'FAQ · syafwaldorf',
   '/contact': 'Contact · syafwaldorf',
+  '/admin': 'Admin · syafwaldorf',
 }
 
 function currentPath() {
   const { pathname, hash } = window.location
   if (hash === '#faq' || pathname === '/faq') return '/faq'
   if (hash === '#contact' || pathname === '/contact') return '/contact'
+  if (pathname === '/admin') return '/admin'
   return '/'
 }
 
@@ -614,9 +620,23 @@ function Deck({ pieces, view }) {
 function Drop() {
   const [active, setActive] = useState('All')
   const [view, setView] = useState('grid')
+  const [items, setItems] = useState(fallbackItems)
+
+  useEffect(() => {
+    let alive = true
+    api.listItems()
+      .then((data) => {
+        if (alive && Array.isArray(data)) setItems(data)
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [])
+
   const shown = useMemo(
     () => (active === 'All' ? items : items.filter((p) => p.category === active)),
-    [active],
+    [active, items],
   )
 
   return (
@@ -764,6 +784,10 @@ function Credit() {
 
 export default function App() {
   const path = useRoute()
+
+  if (path === '/admin') {
+    return <Admin />
+  }
 
   return (
     <div className="page" id="top">
