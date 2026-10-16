@@ -6,6 +6,9 @@ import {
   footer,
   contact,
   items as fallbackItems,
+  items,
+  imageSrc,
+
 } from './content'
 import { api } from './lib/api'
 import Admin from './admin/Admin'
@@ -214,7 +217,7 @@ function PieceCard({
         {onPreview ? <button className="card__preview" aria-label={`View ${piece.title}`} onClick={onPreview}><span aria-hidden="true">↗</span></button> : null}
         <img
           className="card__photo"
-          src={piece.photo ?? '/placeholder-item.svg'}
+          src={imageSrc(piece.photo)}
           alt={piece.title}
           width="320"
           height="400"
