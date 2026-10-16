@@ -10,6 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.1.4",
+    "@netlify/neon": "^0.1.2",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^18.0.8",
+    "jsonwebtoken": "^9.0.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
